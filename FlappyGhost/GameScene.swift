@@ -51,8 +51,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         for i in 0..<2 {
             let background = SKSpriteNode(imageNamed: "Background")
-            background.anchorPoint = CGPointZero
-            background.position = CGPointMake(CGFloat(i) * self.frame.width, 0)
+            background.anchorPoint = CGPoint.zero
+            background.position = CGPoint(x: CGFloat(i) * self.frame.width, y: 0)
             background.name = "background"
             background.size = (self.view?.bounds.size)!
             self.addChild(background)
@@ -71,12 +71,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         Ground.position = CGPoint(x: self.frame.width / 2, y: 0 + Ground.frame.height / 2)
         self.addChild(Ground)
         
-        Ground.physicsBody = SKPhysicsBody(rectangleOfSize: Ground.size)
+        Ground.physicsBody = SKPhysicsBody(rectangleOf: Ground.size)
         Ground.physicsBody?.categoryBitMask = PhysicsCatagory.Ground
         Ground.physicsBody?.collisionBitMask = PhysicsCatagory.Ghost
         Ground.physicsBody?.contactTestBitMask = PhysicsCatagory.Ghost
         Ground.physicsBody?.affectedByGravity = false
-        Ground.physicsBody?.dynamic = false
+        Ground.physicsBody?.isDynamic = false
         
         Ground.zPosition = 3
         
@@ -90,12 +90,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         Ghost.physicsBody?.collisionBitMask = PhysicsCatagory.Ground | PhysicsCatagory.Wall
         Ghost.physicsBody?.contactTestBitMask = PhysicsCatagory.Ground | PhysicsCatagory.Wall | PhysicsCatagory.Score
         Ghost.physicsBody?.affectedByGravity = false
-        Ghost.physicsBody?.dynamic = true
+        Ghost.physicsBody?.isDynamic = true
         
         Ghost.zPosition = 2
     }
     
-    override func didMoveToView(view: SKView) {
+    override func didMove(to view: SKView) {
         /* Setup your scene here */
         
         createScene()
@@ -105,16 +105,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func createButton(){
         
         restartButton = SKSpriteNode(imageNamed: "RestartButton")
-        restartButton.size = CGSizeMake(200, 100)
+        restartButton.size = CGSize(width: 200, height: 100)
         restartButton.position = CGPoint(x: self.frame.width / 2, y: self.frame.height / 2)
         restartButton.zPosition = 6
         restartButton.setScale(0)
         self.addChild(restartButton)
         
-        restartButton.runAction(SKAction.scaleTo(1.0, duration: 0.4))
+        restartButton.run(SKAction.scale(to: 1.0, duration: 0.4))
     }
     
-    func didBeginContact(contact: SKPhysicsContact) {
+    func didBegin(_ contact: SKPhysicsContact) {
         let firstBody = contact.bodyA
         let secondBody = contact.bodyB
         
@@ -135,7 +135,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if firstBody.categoryBitMask == PhysicsCatagory.Ghost && secondBody.categoryBitMask == PhysicsCatagory.Wall || firstBody.categoryBitMask == PhysicsCatagory.Wall && secondBody.categoryBitMask == PhysicsCatagory.Ghost {
             
-            enumerateChildNodesWithName("wallPair", usingBlock: ({
+            enumerateChildNodes(withName: "wallPair", using: ({
                 (node, error) in
                 
                 node.speed = 0
@@ -151,7 +151,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if firstBody.categoryBitMask == PhysicsCatagory.Ghost && secondBody.categoryBitMask == PhysicsCatagory.Ground || firstBody.categoryBitMask == PhysicsCatagory.Ground && secondBody.categoryBitMask == PhysicsCatagory.Ghost {
             
-            enumerateChildNodesWithName("wallPair", usingBlock: ({
+            enumerateChildNodes(withName: "wallPair", using: ({
                 (node, error) in
                 
                 node.speed = 0
@@ -166,33 +166,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if GameStarted == false{
             
             GameStarted = true
             
             Ghost.physicsBody?.affectedByGravity = true
             
-            let spawn = SKAction.runBlock({
+            let spawn = SKAction.run({
                 () in
                 
                 self.createWalls()
             })
             
-            let delay = SKAction.waitForDuration(2.0)
+            let delay = SKAction.wait(forDuration: 2.0)
             
             let SpawnDelay = SKAction.sequence([spawn, delay])
-            let SpawnDelayForever = SKAction.repeatActionForever(SpawnDelay)
-            self.runAction(SpawnDelayForever)
+            let SpawnDelayForever = SKAction.repeatForever(SpawnDelay)
+            self.run(SpawnDelayForever)
             
             let distance = CGFloat(self.frame.width + wallPair.frame.width)
-            let movePipes = SKAction.moveByX(-distance - 50, y: 0, duration: NSTimeInterval(0.01 * distance))
+            let movePipes = SKAction.moveBy(x: -distance - 50, y: 0, duration: TimeInterval(0.01 * distance))
             let removePipes = SKAction.removeFromParent()
             
             moveAndRemove = SKAction.sequence([movePipes, removePipes])
             
-            Ghost.physicsBody?.velocity = CGVectorMake(0, 0)
-            Ghost.physicsBody?.applyImpulse(CGVectorMake(0, 90))
+            Ghost.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
+            Ghost.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 90))
         }
         else {
             if youDied == true {
@@ -200,16 +200,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
             else{
                 
-            Ghost.physicsBody?.velocity = CGVectorMake(0, 0)
-            Ghost.physicsBody?.applyImpulse(CGVectorMake(0, 90))
+            Ghost.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
+            Ghost.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 90))
             }
         }
         
         for touch in touches {
-            let location = touch.locationInNode(self)
+            let location = touch.location(in: self)
         
             if youDied == true {
-                if restartButton.containsPoint(location){
+                if restartButton.contains(location){
                     restartScene()
                 }
             }
@@ -224,9 +224,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let scoreNode = SKSpriteNode(imageNamed: "Coin")
         scoreNode.size = CGSize(width: 50, height: 50)
         scoreNode.position = CGPoint(x: self.frame.width + 25, y: self.frame.height / 2)
-        scoreNode.physicsBody = SKPhysicsBody(rectangleOfSize: scoreNode.size)
+        scoreNode.physicsBody = SKPhysicsBody(rectangleOf: scoreNode.size)
         scoreNode.physicsBody?.affectedByGravity = false
-        scoreNode.physicsBody?.dynamic = false
+        scoreNode.physicsBody?.isDynamic = false
         scoreNode.physicsBody?.categoryBitMask = PhysicsCatagory.Score
         scoreNode.physicsBody?.collisionBitMask = 0
         scoreNode.physicsBody?.contactTestBitMask = PhysicsCatagory.Ghost
@@ -245,19 +245,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         topWall.zRotation = CGFloat(M_PI)
         
-        topWall.physicsBody = SKPhysicsBody(rectangleOfSize: topWall.size)
+        topWall.physicsBody = SKPhysicsBody(rectangleOf: topWall.size)
         topWall.physicsBody?.categoryBitMask = PhysicsCatagory.Wall
         topWall.physicsBody?.collisionBitMask = PhysicsCatagory.Ghost
         topWall.physicsBody?.contactTestBitMask = PhysicsCatagory.Ghost
         topWall.physicsBody?.affectedByGravity = false
-        topWall.physicsBody?.dynamic = false
+        topWall.physicsBody?.isDynamic = false
         
-        bottomWall.physicsBody = SKPhysicsBody(rectangleOfSize: bottomWall.size)
+        bottomWall.physicsBody = SKPhysicsBody(rectangleOf: bottomWall.size)
         bottomWall.physicsBody?.categoryBitMask = PhysicsCatagory.Wall
         bottomWall.physicsBody?.collisionBitMask = PhysicsCatagory.Ghost
         bottomWall.physicsBody?.contactTestBitMask = PhysicsCatagory.Ghost
         bottomWall.physicsBody?.affectedByGravity = false
-        bottomWall.physicsBody?.dynamic = false
+        bottomWall.physicsBody?.isDynamic = false
         
         wallPair.addChild(topWall)
         wallPair.addChild(bottomWall)
@@ -268,18 +268,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         wallPair.position.y = wallPair.position.y + randomPosition
         wallPair.addChild(scoreNode)
         
-        wallPair.runAction(moveAndRemove)
+        wallPair.run(moveAndRemove)
         
         self.addChild(wallPair)
         
     }
    
-    override func update(currentTime: CFTimeInterval) {
+    override func update(_ currentTime: TimeInterval) {
         /* Called before each frame is rendered */
         
         if GameStarted == true{
             if youDied == false{
-                enumerateChildNodesWithName("background", usingBlock: ({
+                enumerateChildNodes(withName: "background", using: ({
                     (node, error) in
                     
                     let backg = node as! SKSpriteNode
@@ -287,7 +287,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     backg.position = CGPoint(x: backg.position.x - 2, y: backg.position.y)
                     
                     if backg.position.x <= -backg.size.width {
-                        backg.position = CGPointMake(backg.position.x + backg.size.width * 2, backg.position.y)
+                        backg.position = CGPoint(x: backg.position.x + backg.size.width * 2, y: backg.position.y)
                         
                     }
                     
